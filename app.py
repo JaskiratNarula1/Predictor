@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -7,9 +7,20 @@ from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 import io
 import base64
+import os
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Adjust origin for production
+
+# Root route for health checks or welcome message
+@app.route('/')
+def home():
+    return jsonify({'message': 'Welcome to the Sales Analysis API. Use the /analyze endpoint to upload your dataset.'}), 200
+
+# Favicon route
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
@@ -74,4 +85,6 @@ def analyze():
     })
 
 if __name__ == '__main__':
-    app.run()
+    # Use PORT environment variable for Render or default to 5000 for local development
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
