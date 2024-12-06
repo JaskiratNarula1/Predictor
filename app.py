@@ -3,29 +3,40 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 import io
 import base64
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})  # Adjust origin for production
 
 @app.route('/analyze', methods=['POST'])
 def analyze():
     # Upload dataset
+    if 'file' not in request.files or request.files['file'].filename == '':
+        return jsonify({'error': 'No file uploaded or file is invalid.'}), 400
+
     file = request.files['file']
-    df = pd.read_csv(file)
+
+    try:
+        df = pd.read_csv(file)
+    except Exception:
+        return jsonify({'error': 'Failed to read the uploaded file. Please upload a valid CSV file.'}), 400
 
     # Validate dataset
-    if 'Month' not in df.columns or 'Sales' not in df.columns:
+    df.columns = df.columns.str.strip().str.lower()
+    if 'month' not in df.columns or 'sales' not in df.columns:
         return jsonify({'error': 'Dataset must contain "Month" and "Sales" columns.'}), 400
 
-    # Process data
-    df['Month'] = pd.to_datetime(df['Month'])
-    df.set_index('Month', inplace=True)
+    try:
+        df['month'] = pd.to_datetime(df['month'])
+    except Exception:
+        return jsonify({'error': 'Invalid date format in "Month" column. Please ensure all dates are valid.'}), 400
+
+    df.set_index('month', inplace=True)
     X = np.arange(len(df)).reshape(-1, 1)
-    y = df['Sales'].values
+    y = df['sales'].values
 
     # Train model
     model = LinearRegression()
@@ -36,6 +47,7 @@ def analyze():
     mse = mean_squared_error(y, y_pred)
     rmse = np.sqrt(mse)
     mae = mean_absolute_error(y, y_pred)
+    r2 = r2_score(y, y_pred)
 
     # Plot graph
     plt.figure(figsize=(10, 6))
@@ -57,6 +69,7 @@ def analyze():
         'mse': mse,
         'rmse': rmse,
         'mae': mae,
+        'r2': r2,
         'plot': plot_url
     })
 
