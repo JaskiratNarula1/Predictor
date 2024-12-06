@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales Analysis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      text-align: center;
+    }
+    #results {
+      margin-top: 20px;
+      display: none;
+    }
+    img {
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sales Analysis</h1>
+    <form id="upload-form">
+      <input type="file" id="file-input" accept=".csv" required />
+      <button type="submit">Upload and Analyze</button>
+    </form>
+    <div id="results">
+      <h2>Results</h2>
+      <p><strong>MSE:</strong> <span id="mse"></span></p>
+      <p><strong>RMSE:</strong> <span id="rmse"></span></p>
+      <p><strong>MAE:</strong> <span id="mae"></span></p>
+      <img id="plot" alt="Sales Analysis Graph" />
+    </div>
+  </div>
+  <script>
+    const form = document.getElementById('upload-form');
+    const results = document.getElementById('results');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById('file-input');
+      const formData = new FormData();
+      formData.append('file', fileInput.files[0]);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/analyze', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await response.json();
+
+        if (response.ok) {
+          document.getElementById('mse').textContent = data.mse;
+          document.getElementById('rmse').textContent = data.rmse;
+          document.getElementById('mae').textContent = data.mae;
+          document.getElementById('plot').src = `data:image/png;base64,${data.plot}`;
+          results.style.display = 'block';
+        } else {
+          alert(data.error || 'An error occurred.');
+        }
+      } catch (error) {
+        alert('Failed to analyze data. Please try again.');
+      }
+    });
+  </script>
+</body>
+</html>
