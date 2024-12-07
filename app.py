@@ -34,7 +34,7 @@ def analyze():
     file = request.files['sales_data']
 
     try:
-        df = pd.read_csv(sales_data)
+        df = pd.read_csv(file)
     except Exception:
         return jsonify({'error': 'Failed to read the uploaded file. Please upload a valid CSV file.'}), 400
 
