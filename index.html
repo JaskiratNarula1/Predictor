@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Analysis</title>
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -35,9 +37,11 @@
       <p><strong>MSE:</strong> <span id="mse"></span></p>
       <p><strong>RMSE:</strong> <span id="rmse"></span></p>
       <p><strong>MAE:</strong> <span id="mae"></span></p>
+      <p><strong>R²:</strong> <span id="r2"></span></p>
       <img id="plot" alt="Sales Analysis Graph" />
     </div>
   </div>
+
   <script>
     const form = document.getElementById('upload-form');
     const results = document.getElementById('results');
@@ -49,16 +53,18 @@
       formData.append('file', fileInput.files[0]);
 
       try {
-        const response = await fetch('https://predictor-harx.onrender.com/analyze', {
+        const response = await fetch('/analyze', {
           method: 'POST',
           body: formData
         });
+
         const data = await response.json();
 
         if (response.ok) {
-          document.getElementById('mse').textContent = data.mse;
-          document.getElementById('rmse').textContent = data.rmse;
-          document.getElementById('mae').textContent = data.mae;
+          document.getElementById('mse').textContent = data.mse.toFixed(2);
+          document.getElementById('rmse').textContent = data.rmse.toFixed(2);
+          document.getElementById('mae').textContent = data.mae.toFixed(2);
+          document.getElementById('r2').textContent = data.r2.toFixed(2);
           document.getElementById('plot').src = `data:image/png;base64,${data.plot}`;
           results.style.display = 'block';
         } else {
