@@ -31,10 +31,10 @@ def analyze():
     if 'file' not in request.files or request.files['file'].filename == '':
         return jsonify({'error': 'No file uploaded or file is invalid.'}), 400
 
-    file = request.files['file']
+    file = request.files['sales_data']
 
     try:
-        df = pd.read_csv(file)
+        df = pd.read_csv(sales_data)
     except Exception:
         return jsonify({'error': 'Failed to read the uploaded file. Please upload a valid CSV file.'}), 400
 
