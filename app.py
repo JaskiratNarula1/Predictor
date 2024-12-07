@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, redirect
 from flask_cors import CORS
 import pandas as pd
 import numpy as np
@@ -10,7 +10,7 @@ import base64
 import os
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Adjust origin for production
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Root route for health checks or welcome message
 @app.route('/')
@@ -22,9 +22,12 @@ def home():
 def favicon():
     return send_from_directory('static', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
 
-@app.route('/analyze', methods=['POST'])
+# Analyze route
+@app.route('/analyze', methods=['GET', 'POST'])
 def analyze():
-    # Upload dataset
+    if request.method == 'GET':
+        return jsonify({'message': 'Use POST to upload your dataset to /analyze.'}), 200
+
     if 'file' not in request.files or request.files['file'].filename == '':
         return jsonify({'error': 'No file uploaded or file is invalid.'}), 400
 
