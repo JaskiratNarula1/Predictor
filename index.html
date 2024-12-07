@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sales Analysis</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -22,6 +20,7 @@
     }
     img {
       max-width: 100%;
+      height: auto;
     }
   </style>
 </head>
@@ -37,7 +36,6 @@
       <p><strong>MSE:</strong> <span id="mse"></span></p>
       <p><strong>RMSE:</strong> <span id="rmse"></span></p>
       <p><strong>MAE:</strong> <span id="mae"></span></p>
-      <p><strong>R²:</strong> <span id="r2"></span></p>
       <img id="plot" alt="Sales Analysis Graph" />
     </div>
   </div>
@@ -45,9 +43,11 @@
   <script>
     const form = document.getElementById('upload-form');
     const results = document.getElementById('results');
+    const plot = document.getElementById('plot');
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const fileInput = document.getElementById('file-input');
       const formData = new FormData();
       formData.append('file', fileInput.files[0]);
@@ -58,19 +58,24 @@
           body: formData
         });
 
+        if (!response.ok) {
+          const errorData = await response.json();
+          alert(errorData.error || 'An error occurred.');
+          return;
+        }
+
         const data = await response.json();
 
-        if (response.ok) {
-          document.getElementById('mse').textContent = data.mse.toFixed(2);
-          document.getElementById('rmse').textContent = data.rmse.toFixed(2);
-          document.getElementById('mae').textContent = data.mae.toFixed(2);
-          document.getElementById('r2').textContent = data.r2.toFixed(2);
-          document.getElementById('plot').src = `data:image/png;base64,${data.plot}`;
-          results.style.display = 'block';
-        } else {
-          alert(data.error || 'An error occurred.');
-        }
+        // Display results
+        document.getElementById('mse').textContent = data.mse.toFixed(2);
+        document.getElementById('rmse').textContent = data.rmse.toFixed(2);
+        document.getElementById('mae').textContent = data.mae.toFixed(2);
+
+        // Render plot
+        plot.src = `data:image/png;base64,${data.plot}`;
+        results.style.display = 'block';
       } catch (error) {
+        console.error('Error:', error);
         alert('Failed to analyze data. Please try again.');
       }
     });
