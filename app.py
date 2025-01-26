@@ -57,7 +57,7 @@ def analyze():
         rmse = np.sqrt(mse)
         mae = mean_absolute_error(y, y_pred)
 
-        # Plot graph
+        # Line Plot
         plt.figure(figsize=(10, 6))
         plt.plot(df.index, y, label='Actual Sales', marker='o')
         plt.plot(df.index, y_pred, label='Predicted Sales', linestyle='--')
@@ -67,18 +67,42 @@ def analyze():
         plt.legend()
         plt.grid()
 
-        # Save plot to base64 string
-        img = io.BytesIO()
-        plt.savefig(img, format='png')
-        img.seek(0)
-        plot_url = base64.b64encode(img.getvalue()).decode()
+        # Save line plot to base64 string
+        line_img = io.BytesIO()
+        plt.savefig(line_img, format='png')
+        line_img.seek(0)
+        line_plot_url = base64.b64encode(line_img.getvalue()).decode()
+        plt.close()
+
+        # Bar Graph
+        plt.figure(figsize=(10, 6))
+        width = 0.4
+        months = df.index.strftime('%Y-%m')  # Format month for bar labels
+        indices = np.arange(len(df))
+
+        plt.bar(indices - width/2, y, width=width, label='Actual Sales')
+        plt.bar(indices + width/2, y_pred, width=width, label='Predicted Sales')
+        plt.xticks(indices, months, rotation=45)
+        plt.title('Sales Comparison')
+        plt.xlabel('Month')
+        plt.ylabel('Sales')
+        plt.legend()
+        plt.tight_layout()
+
+        # Save bar graph to base64 string
+        bar_img = io.BytesIO()
+        plt.savefig(bar_img, format='png')
+        bar_img.seek(0)
+        bar_plot_url = base64.b64encode(bar_img.getvalue()).decode()
+        plt.close()
 
         app.logger.info(f"Analysis completed successfully for file: {file.filename}")
         return jsonify({
             'mse': mse,
             'rmse': rmse,
             'mae': mae,
-            'plot': plot_url
+            'line_plot': line_plot_url,
+            'bar_plot': bar_plot_url
         })
 
     except pd.errors.ParserError as e:
